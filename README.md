@@ -1,6 +1,8 @@
 # Discord RAT
 This repository hosts a Discord Remote Access Tool written entirely in Python with [discord.py](https://discordpy.readthedocs.io/en/stable/).
 
+<img src="https://i.ibb.co/rxzJ34Z/image.png" width=600>
+
 ## Legal Disclaimer
 This tool has been created for educational purposes only.
 
