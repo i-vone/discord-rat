@@ -22,12 +22,12 @@ I am not responsible for its misuse.
 - [x] run
 - [x] screenshot
 - [x] tasklist
+- [x] token
 - [x] tree
 - [x] type
 - [x] user
 - [x] webcam
 - [ ] keylogger
-- [ ] token
 - [ ] passwords
 
 ## Setup
