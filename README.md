@@ -27,7 +27,7 @@ I am not responsible for its misuse.
 - [x] type
 - [x] user
 - [x] webcam
-- [ ] keylogger
+- [x] keylogger
 - [ ] passwords
 
 ## Setup
